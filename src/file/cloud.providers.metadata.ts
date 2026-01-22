@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 
 @Injectable()
@@ -252,6 +252,10 @@ export class CloudProvidersMetaData {
   }
 
   async get(providerUrl: string): Promise<string> {
+    if (!this.isValidProviderUrl(providerUrl)) {
+      throw new BadRequestException('Invalid provider URL');
+    }
+
     if (providerUrl.startsWith(CloudProvidersMetaData.GOOGLE)) {
       return this.providers.get(CloudProvidersMetaData.GOOGLE);
     } else if (providerUrl.startsWith(CloudProvidersMetaData.DIGITAL_OCEAN)) {
@@ -267,5 +271,15 @@ export class CloudProvidersMetaData {
       });
       return data;
     }
+  }
+
+  public static isValidProviderUrl(url: string): boolean {
+    const allowedUrls = [
+      CloudProvidersMetaData.GOOGLE,
+      CloudProvidersMetaData.AZURE,
+      CloudProvidersMetaData.DIGITAL_OCEAN,
+      CloudProvidersMetaData.AWS
+    ];
+    return allowedUrls.some(allowedUrl => url.startsWith(allowedUrl));
   }
 }
