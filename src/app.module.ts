@@ -37,8 +37,15 @@ import { McpModule } from './mcp/mcp.module';
     HttpClientModule,
     GraphQLModule.forRoot<MercuriusDriverConfig>({
       driver: MercuriusDriver,
-      graphiql: true,
-      autoSchemaFile: true
+      graphiql: false, // Disable GraphiQL to prevent introspection
+      autoSchemaFile: true,
+      introspection: false, // Disable introspection completely
+      context: ({ request }) => {
+        if (process.env.NODE_ENV === 'production' && request.body.query && request.body.query.includes('__schema')) {
+          throw new Error('Introspection is disabled');
+        }
+        return {};
+      }
     }),
     PartnersModule,
     EmailModule,
