@@ -336,4 +336,50 @@ export class FileController {
     }
     return { content: Buffer.concat(chunks).toString('utf-8') };
   }
+
+  // Vulnerability: Path Traversal - no validation of path parameters
+  @Get('read')
+  @ApiQuery({
+    name: 'path',
+    example: '../../etc/passwd',
+    required: true,
+    description:
+      'File path to read - no validation is performed to prevent path traversal attacks'
+  })
+  @ApiOperation({
+    description:
+      'Reads a file from the specified path. The endpoint does not validate path traversal sequences, allowing attackers to access arbitrary files on the system.'
+  })
+  @ApiNotFoundResponse({
+    description: 'File not found'
+  })
+  @ApiOkResponse({
+    description: 'Returns file content',
+    schema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string' }
+      }
+    }
+  })
+  async readFilePathTraversal(
+    @Query('path') filePath: string,
+    @Res({ passthrough: true }) res: FastifyReply
+  ): Promise<{ content: string }> {
+    this.logger.debug(
+      `Reading file via path traversal vulnerable endpoint: ${filePath}`
+    );
+
+    try {
+      // Vulnerability: No path validation - directly reading the provided path
+      // This allows path traversal attacks like ../../etc/passwd
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      res.type('text/plain');
+      return { content };
+    } catch (err) {
+      this.logger.error(`Failed to read file: ${err.message}`);
+      res.status(HttpStatus.NOT_FOUND);
+      return { content: `Error: ${err.message}` };
+    }
+  }
 }

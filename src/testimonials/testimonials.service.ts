@@ -64,4 +64,23 @@ export class TestimonialsService {
       return err.message;
     }
   }
+
+  // Vulnerability: ORM Injection - using raw string interpolation in queries
+  async search(query: string): Promise<Testimonial[]> {
+    try {
+      this.logger.debug(`Searching testimonials with query: ${query}`);
+
+      // Vulnerability: Direct string interpolation in TypeORM query
+      // This allows SQL injection attacks
+      const connection = this.em.getConnection();
+      const results = await connection.execute(
+        `SELECT * FROM testimonial WHERE message LIKE '%${query}%' OR name LIKE '%${query}%' OR title LIKE '%${query}%'`
+      );
+
+      return results as Testimonial[];
+    } catch (err) {
+      this.logger.error(`Search failed: ${err.message}`);
+      return [];
+    }
+  }
 }

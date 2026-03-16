@@ -21,6 +21,11 @@ const menu: Array<MenuItem> = [
     path: '/chat',
     newTab: false
   },
+  {
+    name: 'Search',
+    path: '/search',
+    newTab: false
+  },
   { name: 'Edit user data', path: RoutePath.Userprofile, newTab: false },
   {
     name: 'Adminmenu',

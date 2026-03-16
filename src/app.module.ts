@@ -20,6 +20,9 @@ import { PartnersModule } from './partners/partners.module';
 import { EmailModule } from './email/email.module';
 import { ChatModule } from './chat/chat.module';
 import { SafeFilesModule } from './safe-files/safe-files.module';
+import { FetchModule } from './fetch/fetch.module';
+import { UploadModule } from './upload/upload.module';
+import { SerializeModule } from './serialize/serialize.module';
 
 @Module({
   imports: [
@@ -42,7 +45,10 @@ import { SafeFilesModule } from './safe-files/safe-files.module';
     PartnersModule,
     EmailModule,
     ChatModule,
-    SafeFilesModule
+    SafeFilesModule,
+    FetchModule,
+    UploadModule,
+    SerializeModule
   ],
   controllers: [AppController],
   providers: [

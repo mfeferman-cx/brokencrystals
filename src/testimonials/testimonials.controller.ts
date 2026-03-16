@@ -111,4 +111,29 @@ export class TestimonialsController {
     const count = await this.testimonialsService.count(data.query);
     return { count };
   }
+
+  // Vulnerability: ORM Injection endpoint
+  @Get('search')
+  @ApiQuery({
+    name: 'query',
+    example: "test' OR '1'='1",
+    required: true,
+    description:
+      'Search query - directly interpolated into SQL query without parameterization'
+  })
+  @ApiOperation({
+    description:
+      'Searches testimonials by query string. The query parameter is directly interpolated into the SQL query, making it vulnerable to ORM injection attacks.'
+  })
+  @ApiOkResponse({
+    type: TestimonialDto,
+    isArray: true
+  })
+  async searchTestimonials(
+    @Query('query') query: string
+  ): Promise<TestimonialDto[]> {
+    this.logger.debug(`Search testimonials with query: ${query}`);
+    const results = await this.testimonialsService.search(query);
+    return results.map(TestimonialDto.covertToApi);
+  }
 }
