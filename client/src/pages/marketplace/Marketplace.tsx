@@ -109,10 +109,7 @@ export const Marketplace: FC<Props> = (props: Props) => {
     if (props.preview) {
       getLatestProducts().then((data) => setProducts(data));
     } else {
-      getProducts(
-        new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
-        new Date(new Date().setDate(new Date().getDate() + 1))
-      ).then((data) => setProducts(data));
+      getLatestProducts().then((data) => setProducts(data));
     }
   }, []);
 
