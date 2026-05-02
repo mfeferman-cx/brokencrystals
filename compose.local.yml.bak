@@ -12,7 +12,7 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - '5433:5432'
+      - '5432:5432'
     volumes:
       - './pg.sql:/docker-entrypoint-initdb.d/pg.sql'
 
@@ -35,7 +35,7 @@ services:
       - './keycloak/imports/realm-export.json:/opt/keycloak/data/import/realm-export.json'
     command: start-dev --import-realm
     ports:
-      - '8082:8080'
+      - '8080:8080'
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
@@ -72,14 +72,13 @@ services:
       timeout: 30s
     environment:
       URL: http://localhost:3000
-      NODE_ENV: development
       GRPC_WEB_PROXY_URL: ${GRPC_WEB_PROXY_URL}
       CHAT_API_URL: ${CHAT_API_URL}
       CHAT_API_MODEL: ${CHAT_API_MODEL}
       CHAT_API_TOKEN: ${CHAT_API_TOKEN}
       CHAT_API_MAX_TOKENS: ${CHAT_API_MAX_TOKENS}
     ports:
-      - '3099:3000'
+      - '3000:3000'
       - '5000:5000'
     logging:
       options:
@@ -137,7 +136,7 @@ services:
       timeout: 10s
       start_period: 60s
     ports:
-      - '11435:11434'
+      - '11434:11434'
     logging:
       options:
         max-file: '5'

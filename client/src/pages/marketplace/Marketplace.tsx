@@ -106,11 +106,9 @@ export const Marketplace: FC<Props> = (props: Props) => {
   };
 
   useEffect(() => {
-    if (props.preview) {
-      getLatestProducts().then((data) => setProducts(data));
-    } else {
-      getLatestProducts().then((data) => setProducts(data));
-    }
+    // Load all products for the full marketplace grid
+    // getProducts with no params uses the controller default (last 1 year) which returns all 9 current products
+    getProducts().then((data) => setProducts(data));
   }, []);
 
   useEffect(() => {

@@ -35,11 +35,13 @@ export function getTestimonialsCount(): Promise<any> {
   });
 }
 
-export function getProducts(dateFrom: Date, dateTo: Date): Promise<Product[]> {
+export function getProducts(dateFrom?: Date, dateTo?: Date): Promise<Product[]> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.set('date_from', formatDateToYYYYMMDD(dateFrom));
+  if (dateTo) params.set('date_to', formatDateToYYYYMMDD(dateTo));
+  const query = params.toString();
   return makeApiRequest({
-    url: `${ApiUrl.Products}?date_from=${formatDateToYYYYMMDD(
-      dateFrom
-    )}&date_to=${formatDateToYYYYMMDD(dateTo)}`,
+    url: `${ApiUrl.Products}${query ? '?' + query : ''}`,
     method: 'get',
     headers: {
       authorization:

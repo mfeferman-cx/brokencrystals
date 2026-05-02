@@ -140,7 +140,10 @@ export class PartnersController {
       if (!this.isValidInput(keyword)) {
         throw new Error('Invalid input');
       }
-      const xpath = `//partners/partner/name[contains(., '${this.escapeForXPath(keyword)}')]`;
+      // Empty keyword means return all partners (no filter)
+      const xpath = keyword
+        ? `//partners/partner/name[contains(., '${this.escapeForXPath(keyword)}')]`
+        : '//partners/partner/name';
       return this.partnersService.getPartnersProperties(xpath);
     } catch (err) {
       const errStr = err.toString();
@@ -165,8 +168,9 @@ export class PartnersController {
   }
 
   private isValidInput(input: string): boolean {
-    // Implement a basic validation for general inputs
-    // This is a placeholder for a more robust validation logic
+    // Allow empty string (means "return all partners")
+    // For non-empty strings, validate alphanumeric + underscore only
+    if (input === '') return true;
     const inputPattern = /^[a-zA-Z0-9_]+$/;
     return inputPattern.test(input);
   }
